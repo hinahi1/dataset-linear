@@ -60,7 +60,7 @@ print(f"Estatísticas:")
 print(f"y_exp - Média: {media_y_exp:.4f}, Desvio Padrão: {desvio_padrao_y_exp:.4f}")
 print(f"y_num - Média: {media_y_num:.4f}, Desvio Padrão: {desvio_padrao_y_num:.4f}")
 
-# Plotando os resultados
+# Plotando os resultadoss
 plt.figure(figsize=(8, 6))
 
 plt.scatter(x_exp, y_exp, color='blue', label='Dados com Ruído (y_exp)')
