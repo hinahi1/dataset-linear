@@ -1,0 +1,75 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+
+# Gerando os dados experimentais com ruído (baseado no seu exemplo anterior)
+m = 2  
+c = 5  
+
+x_exp = np.linspace(0, 10, 50)
+np.random.seed(42)
+ruido = np.random.randn(len(x_exp)) * 2
+y_exp = m * x_exp + c + ruido
+
+# Convertendo os dados para tensores do TensorFlow
+x_exp_tf = tf.convert_to_tensor(x_exp, dtype=tf.float32)
+y_exp_tf = tf.convert_to_tensor(y_exp, dtype=tf.float32)
+
+# Inicializando os parâmetros a e b como variáveis do TensorFlow
+a = tf.Variable(1.0, name="a")
+b = tf.Variable(0.0, name="b")
+
+# Função para calcular o erro quadrático médio (MSE)
+def calcular_loss():
+    y_num = a * x_exp_tf + b  # Cálculo de y_num
+    loss = tf.reduce_mean((y_exp_tf - y_num) ** 2)  # Erro quadrático médio (MSE)
+    return loss
+
+# Definindo o otimizador (Adam) e a taxa de aprendizado
+optimizer = tf.optimizers.Adam(learning_rate=0.1)
+
+# Função de treinamento usando GradientTape
+def treinar(steps):
+    for step in range(steps):
+        with tf.GradientTape() as tape:
+            loss = calcular_loss()  # Calcula a loss dentro do tape
+        # Calcula os gradientes de a e b
+        gradientes = tape.gradient(loss, [a, b])
+        # Aplica os gradientes para otimizar a e b
+        optimizer.apply_gradients(zip(gradientes, [a, b]))
+        
+        if step % 100 == 0:
+            print(f"Step {step}: loss = {loss.numpy():.4f}, a = {a.numpy():.4f}, b = {b.numpy():.4f}")
+
+# Executando o treinamento por 1000 iterações
+treinar(1000)
+
+# Calculando os valores de y_num com os parâmetros otimizados
+y_num_tf = a * x_exp_tf + b
+
+# Calculando as estatísticas para y_exp e y_num
+media_y_exp = np.mean(y_exp)
+desvio_padrao_y_exp = np.std(y_exp)
+
+media_y_num = np.mean(y_num_tf.numpy())
+desvio_padrao_y_num = np.std(y_num_tf.numpy())
+
+# Exibindo os resultados
+print(f"Valores otimizados: a = {a.numpy():.4f}, b = {b.numpy():.4f}")
+print(f"Estatísticas:")
+print(f"y_exp - Média: {media_y_exp:.4f}, Desvio Padrão: {desvio_padrao_y_exp:.4f}")
+print(f"y_num - Média: {media_y_num:.4f}, Desvio Padrão: {desvio_padrao_y_num:.4f}")
+
+# Plotando os resultados
+plt.figure(figsize=(8, 6))
+
+plt.scatter(x_exp, y_exp, color='blue', label='Dados com Ruído (y_exp)')
+plt.plot(x_exp, y_num_tf.numpy(), color='red', label=f'Linha Otimizada (y_num = {a.numpy():.2f}x + {b.numpy():.2f})')
+
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Otimização de a e b usando TensorFlow e GradientTape')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
